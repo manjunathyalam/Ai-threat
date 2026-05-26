@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AETHER SHIELD // Secure Terminal Gate</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="login-body">
+    <!-- Canvas for cyber matrix grid effect -->
+    <canvas id="cyberCanvas"></canvas>
+
+    <div class="login-container">
+        <!-- Logo Header -->
+        <div class="login-header">
+            <div class="logo-glow">
+                <i class="fa-solid fa-shield-halved cyber-icon-pulse"></i>
+            </div>
+            <h1>AETHER<span>SHIELD</span></h1>
+            <div class="system-status-indicator">
+                <span class="status-dot green"></span>
+                <span class="status-text">SECURE TERMINAL ACCESS // PORT 443</span>
+            </div>
+        </div>
+
+        <!-- Login Card -->
+        <div class="login-card">
+            <div class="card-edge-top"></div>
+            
+            <h2>CRITICAL CRYPTOGRAPHIC LOCK</h2>
+            <p class="subtitle">Please provide clearance keys to initiate security session.</p>
+
+            {% if error %}
+            <div class="alert alert-danger">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form action="{{ url_for('login') }}" method="POST" id="loginForm">
+                <div class="form-group">
+                    <label for="username"><i class="fa-solid fa-user-shield"></i> IDENTITY IDENTIFIER</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="username" name="username" placeholder="Enter operator ID" required autocomplete="off">
+                        <div class="input-focus-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password"><i class="fa-solid fa-key"></i> CRYPTO ACCESS KEY</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" placeholder="••••••••••••" required autocomplete="off">
+                        <div class="input-focus-border"></div>
+                    </div>
+                </div>
+
+                <!-- Demo helper -->
+                <div class="credentials-helper">
+                    <div class="helper-header">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>DEMO CREDENTIAL clearance</span>
+                    </div>
+                    <div class="helper-body">
+                        <div><span>ID:</span> <code>admin</code></div>
+                        <div><span>KEY:</span> <code>cybersecurity2026</code></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="cyber-btn" id="loginBtn">
+                    <span class="btn-text">INITIALIZE SECURE PORTAL</span>
+                    <span class="btn-glitch-overlay"></span>
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                </button>
+            </form>
+
+            <div class="card-edge-bottom"></div>
+        </div>
+
+        <div class="login-footer">
+            <p>CLASSIFIED DATA // OPERATIONAL SOC CHANNEL // E2E ENCRYPTED</p>
+            <p class="timestamp" id="realtimeClock">UTC CLOCK: 2026-05-26 10:39:00</p>
+        </div>
+    </div>
+
+    <!-- Script for Clock and Canvas Matrix Background -->
+    <script>
+        // Real-time Clock
+        function updateClock() {
+            const now = new Date();
+            const utcString = now.toISOString().replace('T', ' ').substring(0, 19);
+            document.getElementById('realtimeClock').textContent = `SYSTEM CLOCK: ${utcString} UTC`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Canvas Cyber Grid Animation
+        const canvas = document.getElementById('cyberCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const dots = [];
+        const numDots = 80;
+        
+        for (let i = 0; i < numDots; i++) {
+            dots.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4,
+                radius: Math.random() * 2 + 1
+            });
+        }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid lines
+            ctx.strokeStyle = 'rgba(0, 229, 255, 0.03)';
+            ctx.lineWidth = 1;
+            const gridSize = 60;
+            
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Draw network connections
+            ctx.strokeStyle = 'rgba(0, 255, 128, 0.05)';
+            ctx.fillStyle = 'rgba(0, 255, 128, 0.3)';
+            
+            for (let i = 0; i < numDots; i++) {
+                const d1 = dots[i];
+                d1.x += d1.vx;
+                d1.y += d1.vy;
+
+                if (d1.x < 0 || d1.x > canvas.width) d1.vx *= -1;
+                if (d1.y < 0 || d1.y > canvas.height) d1.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(d1.x, d1.y, d1.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let j = i + 1; j < numDots; j++) {
+                    const d2 = dots[j];
+                    const dist = Math.hypot(d1.x - d2.x, d1.y - d2.y);
+                    if (dist < 150) {
+                        ctx.strokeStyle = `rgba(0, 229, 255, ${0.08 * (1 - dist / 150)})`;
+                        ctx.beginPath();
+                        ctx.moveTo(d1.x, d1.y);
+                        ctx.lineTo(d2.x, d2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            // Draw scanning sweep line
+            const sweepY = (Date.now() / 20) % (canvas.height + 200) - 100;
+            const grad = ctx.createLinearGradient(0, sweepY - 50, 0, sweepY + 50);
+            grad.addColorStop(0, 'rgba(0, 255, 128, 0)');
+            grad.addColorStop(0.5, 'rgba(0, 255, 128, 0.03)');
+            grad.addColorStop(1, 'rgba(0, 255, 128, 0)');
+            
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, sweepY - 50, canvas.width, 100);
+
+            requestAnimationFrame(drawGrid);
+        }
+        drawGrid();
+
+        // Loading indicator on submit
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            const btn = document.getElementById('loginBtn');
+            btn.classList.add('loading');
+            btn.querySelector('.btn-text').textContent = 'DECRYPTING SECURE TOKENS...';
+        });
+    </script>
+</body>
+</html>

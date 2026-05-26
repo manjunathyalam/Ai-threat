@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AETHER SHIELD // Security Operations Center (SOC)</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="dashboard-body">
+    <!-- Cyber Background Elements -->
+    <div class="cyber-grid"></div>
+    <div class="cyber-scanline"></div>
+
+    <div class="app-layout">
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-area">
+                    <i class="fa-solid fa-shield-halved logo-icon"></i>
+                    <h2>AETHER<span>SHIELD</span></h2>
+                </div>
+                <div class="sec-level">LEVEL 4 SECURE OPERATOR</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" data-tab="dashboard">
+                        <a href="#dashboard"><i class="fa-solid fa-gauge-high"></i> <span>SOC Dashboard</span></a>
+                    </li>
+                    <li class="nav-item" data-tab="scan">
+                        <a href="#scan"><i class="fa-solid fa-file-shield"></i> <span>Upload & Scan Logs</span></a>
+                    </li>
+                    <li class="nav-item" data-tab="packets">
+                        <a href="#packets"><i class="fa-solid fa-network-wired"></i> <span>Packet Monitor</span></a>
+                    </li>
+                    <li class="nav-item" data-tab="virustotal">
+                        <a href="#virustotal"><i class="fa-solid fa-magnifying-glass-chart"></i> <span>VT Scanner</span></a>
+                    </li>
+                    <li class="nav-item" data-tab="reports">
+                        <a href="#reports"><i class="fa-solid fa-box-archive"></i> <span>AI Scan Reports</span></a>
+                    </li>
+                    <li class="nav-item" data-tab="settings">
+                        <a href="#settings"><i class="fa-solid fa-sliders"></i> <span>SOC Settings</span></a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="operator-profile">
+                    <div class="avatar"><i class="fa-solid fa-user-gear"></i></div>
+                    <div class="operator-info">
+                        <span class="op-name">Admin Operator</span>
+                        <span class="op-role">SOC Lead Analyst</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-btn" title="Logout Session">
+                    <i class="fa-solid fa-power-off"></i>
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN APP CONTENT -->
+        <main class="app-main">
+            <!-- HEADER BAR -->
+            <header class="app-header">
+                <div class="header-left">
+                    <div class="system-status-badge">
+                        <span class="pulse-indicator"></span>
+                        <span class="status-label">SOC STATUS:</span>
+                        <span class="status-val green" id="socStatusVal">ACTIVE RECORDING</span>
+                    </div>
+                    <div class="header-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="globalSearch" placeholder="Search IP, alert signatures, reports...">
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="utc-clock" id="headerClock">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>UTC 2026-05-26 12:00:00</span>
+                    </div>
+                    <div class="api-status-indicator">
+                        <i class="fa-solid fa-brain" title="AI Analyst engine state"></i>
+                        <span class="api-label">AI:</span>
+                        <span class="api-val text-green" id="apiStatusVal">LOCAL ENGINE</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB CONTENT CONTAINER -->
+            <div class="tab-content-container">
+                
+                <!-- 1. DASHBOARD OVERVIEW -->
+                <section class="tab-pane active" id="tab-dashboard">
+                    <!-- Metric Cards Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-card cyan-glow">
+                            <div class="metric-icon"><i class="fa-solid fa-shield"></i></div>
+                            <div class="metric-details">
+                                <span class="metric-label">TOTAL LOG SCANS</span>
+                                <h3 class="counter" id="statTotalScans">0</h3>
+                                <span class="metric-sub">Historical files processed</span>
+                            </div>
+                        </div>
+                        <div class="metric-card red-glow">
+                            <div class="metric-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div class="metric-details">
+                                <span class="metric-label">THREAT ALERTS DETECTED</span>
+                                <h3 class="counter text-red" id="statThreatAlerts">0</h3>
+                                <span class="metric-sub text-red" id="statCriticalAlerts">0 Critical events found</span>
+                            </div>
+                        </div>
+                        <div class="metric-card gold-glow">
+                            <div class="metric-icon"><i class="fa-solid fa-chart-line"></i></div>
+                            <div class="metric-details">
+                                <span class="metric-label">AVG RISK INDEX</span>
+                                <h3 class="counter" id="statAvgRisk">0</h3>
+                                <span class="metric-sub">Scale 0 - 100 max</span>
+                            </div>
+                        </div>
+                        <div class="metric-card green-glow">
+                            <div class="metric-icon"><i class="fa-solid fa-heartbeat"></i></div>
+                            <div class="metric-details">
+                                <span class="metric-label">INTRUSION ATTEMPTS</span>
+                                <h3 id="statThreatTrend">STABLE</h3>
+                                <span class="metric-sub">Real-time threat level</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Layout Grid -->
+                    <div class="dashboard-grid">
+                        <!-- Left Panel: Security Score & Vector charts -->
+                        <div class="grid-panel large-5 glass-panel">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-shield-virus text-cyan"></i> SECURITY POSTURE INDEX</h3>
+                            </div>
+                            <div class="security-score-container">
+                                <div class="gauge-wrapper">
+                                    <svg class="score-gauge" viewBox="0 0 100 100">
+                                        <circle class="gauge-bg" cx="50" cy="50" r="42"></circle>
+                                        <circle class="gauge-fill" id="scoreGaugeFill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"></circle>
+                                    </svg>
+                                    <div class="gauge-value">
+                                        <span id="scoreNumber">100</span>
+                                        <span class="percentage">%</span>
+                                    </div>
+                                </div>
+                                <div class="score-description">
+                                    <h4 id="scoreGrade" class="text-green">STATUS: SECURE</h4>
+                                    <p id="scoreSummary">All processed endpoints report optimal configurations and no active intrusion footprints.</p>
+                                </div>
+                            </div>
+                            
+                            <hr class="panel-divider">
+                            
+                            <div class="vector-distribution">
+                                <h4>Attack Vector Distribution</h4>
+                                <div class="chart-container" style="height: 180px;">
+                                    <canvas id="vectorPieChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Threat Timeline -->
+                        <div class="grid-panel large-7 glass-panel">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-timeline text-gold"></i> THREAT INCIDENT CHRONOLOGY</h3>
+                            </div>
+                            <div class="chart-container" style="height: 250px;">
+                                <canvas id="threatTimelineChart"></canvas>
+                            </div>
+                            
+                            <hr class="panel-divider">
+                            
+                            <div class="recent-events-container">
+                                <h4>Live Intrusion Logs</h4>
+                                <div class="recent-events-list" id="recentAlertsList">
+                                    <div class="event-item clean">
+                                        <span class="time">16:00:00</span>
+                                        <span class="category">SECURE BOOT</span>
+                                        <span class="desc">Kernel module validation clean.</span>
+                                        <span class="badge badge-success">OK</span>
+                                    </div>
+                                    <!-- Dynamic -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. UPLOAD & SCAN LOGS -->
+                <section class="tab-pane" id="tab-scan">
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-file-import text-green"></i> THREAT INGESTION SYSTEM</h3>
+                            <span class="panel-subtitle">Upload log reports to invoke immediate rule-based mapping and generative AI analysis.</span>
+                        </div>
+
+                        <!-- Drag and Drop Zone -->
+                        <div class="upload-zone" id="dropZone">
+                            <div class="upload-icon">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <h3>DRAG AND DROP SECURITY LOGS</h3>
+                            <p>Supports .txt, .log, .csv, .json formats (Max file size 25MB)</p>
+                            <div class="file-select-btn">
+                                <label for="fileInput" class="cyber-btn select-btn">
+                                    <span>SELECT LOG FILE</span>
+                                    <input type="file" id="fileInput" accept=".txt,.log,.csv,.json" style="display: none;">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Scan Status / Progress -->
+                        <div class="scan-progress-container hidden" id="scanProgressArea">
+                            <div class="progress-header">
+                                <span class="scanning-file-name" id="progressFileName">auth.log</span>
+                                <span class="scanning-status-text" id="progressStatusText">EXTRACTING METADATA...</span>
+                            </div>
+                            <div class="progress-bar-wrapper">
+                                <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+                            </div>
+                            <div class="progress-steps">
+                                <div class="step active" id="step1"><i class="fa-solid fa-check"></i> Read</div>
+                                <div class="step" id="step2"><i class="fa-solid fa-spinner fa-spin"></i> Parse</div>
+                                <div class="step" id="step3"><i class="fa-solid fa-brain"></i> AI Classify</div>
+                                <div class="step" id="step4"><i class="fa-solid fa-floppy-disk"></i> Save</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SCAN RESULT ANALYSIS (Hidden initially) -->
+                    <div class="scan-results-wrapper hidden" id="scanResultsArea">
+                        <div class="results-header-bar">
+                            <div class="results-meta">
+                                <h2 id="resultFileName">auth_sample.log</h2>
+                                <span>Scanned: <strong id="resultTimestamp">2026-05-26 12:00</strong> | Total Lines Checked: <strong id="resultLinesCount">0</strong></span>
+                            </div>
+                            <div class="results-actions">
+                                <button class="cyber-btn-outline" id="btnExportJSON"><i class="fa-solid fa-download"></i> EXPORT RAW JSON</button>
+                                <button class="cyber-btn" id="btnPrintReport"><i class="fa-solid fa-print"></i> DOWNLOAD PDF REPORT</button>
+                            </div>
+                        </div>
+
+                        <!-- Result Overview Badges -->
+                        <div class="results-summary-row">
+                            <div class="summary-stat-box" id="boxScore">
+                                <span class="box-label">GLOBAL THREAT RISK</span>
+                                <h3 id="resultThreatScore">0</h3>
+                                <span class="badge" id="resultStatusBadge">CLEAN</span>
+                            </div>
+                            <div class="summary-stat-box">
+                                <span class="box-label">CRITICAL THREATS</span>
+                                <h3 class="text-red" id="resultCriticalCount">0</h3>
+                                <span>Urgent Containment</span>
+                            </div>
+                            <div class="summary-stat-box">
+                                <span class="box-label">HIGH THREATS</span>
+                                <h3 class="text-gold" id="resultHighCount">0</h3>
+                                <span>Immediate Audit</span>
+                            </div>
+                            <div class="summary-stat-box">
+                                <span class="box-label">MEDIUM & LOW</span>
+                                <h3 class="text-cyan" id="resultMedLowCount">0</h3>
+                                <span>Policy Adjust</span>
+                            </div>
+                        </div>
+
+                        <!-- Results Layout -->
+                        <div class="results-columns">
+                            <!-- Left: AI Report Drawer -->
+                            <div class="results-ai-panel glass-panel">
+                                <div class="panel-header">
+                                    <h3><i class="fa-solid fa-brain text-green"></i> AI THREAT CLASSIFIER REPORT</h3>
+                                </div>
+                                <div class="ai-report-body">
+                                    <div class="report-section">
+                                        <h4><i class="fa-solid fa-circle-question"></i> INCIDENT EXPLANATION</h4>
+                                        <p id="aiTechnicalExplanation">AI analysis is running...</p>
+                                    </div>
+                                    
+                                    <div class="report-section">
+                                        <h4><i class="fa-solid fa-crosshairs"></i> MITRE ATT&CK MAPPINGS</h4>
+                                        <div class="mitre-table-wrapper">
+                                            <table class="mitre-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ATTACK TACTIC</th>
+                                                        <th>TECHNIQUE MAPPING</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="aiMitreBody">
+                                                    <!-- Dynamic -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="report-section">
+                                        <h4><i class="fa-solid fa-shield-halved"></i> MITIGATION & REMEDIATION STEPS</h4>
+                                        <ul class="mitigation-list" id="aiRecommendations">
+                                            <!-- Dynamic -->
+                                        </ul>
+                                    </div>
+
+                                    <div class="report-section highlight-box">
+                                        <h4><i class="fa-solid fa-clipboard-list"></i> SOC ANALYST GUIDELINES</h4>
+                                        <p id="aiSocNotes">Immediate containment protocols...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Rule-Based Match Alerts -->
+                            <div class="results-alerts-panel glass-panel">
+                                <div class="panel-header">
+                                    <h3><i class="fa-solid fa-list-check text-gold"></i> IDENTIFIED SECURITY LOG ALERTS</h3>
+                                    <div class="alerts-filter">
+                                        <input type="text" id="alertsFilterInput" placeholder="Filter alerts...">
+                                    </div>
+                                </div>
+                                <div class="alerts-table-wrapper">
+                                    <table class="alerts-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Line</th>
+                                                <th>Severity</th>
+                                                <th>Category</th>
+                                                <th>Source IP</th>
+                                                <th>Timestamp</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="resultAlertsBody">
+                                            <!-- Dynamic -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="alert-details-inspector hidden" id="alertDetailInspector">
+                                    <h4>ALERT DETAILS INSPECTOR</h4>
+                                    <div class="details-grid">
+                                        <div><strong>Line ID:</strong> <span id="inspectLine">0</span></div>
+                                        <div><strong>Category:</strong> <span id="inspectCategory">SQLi</span></div>
+                                        <div><strong>Severity:</strong> <span id="inspectSeverity" class="badge">High</span></div>
+                                        <div><strong>Source IP:</strong> <span id="inspectIP">127.0.0.1</span></div>
+                                        <div class="full-width"><strong>Matched Signature Expression:</strong> <code id="inspectEvidence">None</code></div>
+                                        <div class="full-width">
+                                            <strong>Raw Log Entry:</strong>
+                                            <pre class="raw-code" id="inspectRaw">Log snippet here</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. LIVE PACKET MONITOR (WIRESHARK) -->
+                <section class="tab-pane" id="tab-packets">
+                    <div class="glass-panel">
+                        <div class="panel-header flex-header">
+                            <div>
+                                <h3><i class="fa-solid fa-network-wired text-cyan"></i> LIVE NETWORK PACKET INTERCEPTOR</h3>
+                                <span class="panel-subtitle">Simulating capture from interface: <code class="text-green">eth0 [Promiscuous Mode]</code></span>
+                            </div>
+                            <div class="packet-controls">
+                                <button class="cyber-btn" id="btnToggleCapture"><i class="fa-solid fa-pause"></i> PAUSE CAPTURE</button>
+                                <button class="cyber-btn-outline" id="btnClearPackets"><i class="fa-solid fa-trash-can"></i> CLEAR SCREEN</button>
+                            </div>
+                        </div>
+
+                        <!-- Packets Filter Bar -->
+                        <div class="packets-filter-bar">
+                            <div class="filter-group">
+                                <label for="packetProtoFilter">Protocol:</label>
+                                <select id="packetProtoFilter" class="dark-select">
+                                    <option value="ALL">ALL PROTOCOLS</option>
+                                    <option value="TCP">TCP</option>
+                                    <option value="UDP">UDP</option>
+                                    <option value="ICMP">ICMP</option>
+                                    <option value="DNS">DNS</option>
+                                </select>
+                            </div>
+                            <div class="filter-group flex-fill">
+                                <input type="text" id="packetSearch" placeholder="Expression Filter (e.g. ip.src == 185.220.101.5 or tcp.port == 22)...">
+                            </div>
+                            <div class="filter-checkbox">
+                                <input type="checkbox" id="packetSuspiciousOnly">
+                                <label for="packetSuspiciousOnly">SUSPICIOUS ONLY</label>
+                            </div>
+                        </div>
+
+                        <!-- Packet List Grid -->
+                        <div class="packets-table-container">
+                            <table class="packets-table" id="packetsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">No.</th>
+                                        <th style="width: 100px;">Time</th>
+                                        <th style="width: 140px;">Source</th>
+                                        <th style="width: 140px;">Destination</th>
+                                        <th style="width: 90px;">Protocol</th>
+                                        <th style="width: 80px;">Length</th>
+                                        <th>Info Summary</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="packetsBody">
+                                    <!-- Dynamic packets generated -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Packet Details inspector (Wireshark split pane) -->
+                        <div class="packet-payload-inspector">
+                            <div class="tab-selectors">
+                                <button class="inspector-tab active" data-pane="frame-info">Frame Details</button>
+                                <button class="inspector-tab" data-pane="hex-dump">Hex Raw Data</button>
+                            </div>
+                            <div class="pane-content" id="pane-frame-info">
+                                <ul class="frame-tree-list" id="packetFrameTree">
+                                    <li><i class="fa-solid fa-caret-down"></i> <strong>Frame 495:</strong> 936 bytes on wire, 936 bytes captured on interface eth0</li>
+                                    <li><i class="fa-solid fa-caret-down"></i> <strong>Ethernet II:</strong> Src: Intel_fd:4a:c1 (00:1a:2b:fd:4a:c1), Dst: Cisco_e2:01:45 (00:0f:30:e2:01:45)</li>
+                                    <li><i class="fa-solid fa-caret-down"></i> <strong>Internet Protocol Version 4:</strong> Src: 185.220.101.5, Dst: 192.168.1.100</li>
+                                    <li><i class="fa-solid fa-caret-down"></i> <strong>Transmission Control Protocol:</strong> Src Port: 52410, Dst Port: 22, Seq: 1, Ack: 1, Len: 880</li>
+                                </ul>
+                            </div>
+                            <div class="pane-content hidden" id="pane-hex-dump">
+                                <pre class="hex-dump-code" id="packetHexDump">
+0000  00 0f 30 e2 01 45 00 1a  2b fd 4a c1 08 00 45 00   ..0..E..+.J...E.
+0010  03 a8 e1 a2 40 00 3c 06  e5 fa b9 dc 65 05 c0 a8   ....@.<.....e...
+0020  01 64 cc ba 00 16 00 00  00 01 00 00 00 01 50 18   .d............P.
+0030  fa f0 db a2 00 00 53 53  48 2d 32 2e 30 2d 4f 70   ......SSH-2.0-Op
+0044  65 6e 53 53 48 5f 38 2e  34 70 31 20 44 65 62 69   enSSH_8.4p1 Debi
+0050  61 6e 2d 35 0d 0a                                  an-5..
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. VIRUSTOTAL SCANNER -->
+                <section class="tab-pane" id="tab-virustotal">
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-shield-virus text-green"></i> AETHER SHIELD // MALICIOUS DATABASE SCANNER</h3>
+                            <span class="panel-subtitle">Verify cryptographic file hashes, IP addresses, domains, or URLs against global reputation indices.</span>
+                        </div>
+
+                        <!-- Scanner Form Selection -->
+                        <div class="vt-scanner-box">
+                            <div class="vt-form-tabs">
+                                <button class="vt-tab active" data-type="ip"><i class="fa-solid fa-network-wired"></i> IP ADDRESS</button>
+                                <button class="vt-tab" data-type="domain"><i class="fa-solid fa-globe"></i> DOMAIN</button>
+                                <button class="vt-tab" data-type="hash"><i class="fa-solid fa-hashtag"></i> FILE HASH</button>
+                                <button class="vt-tab" data-type="url"><i class="fa-solid fa-link"></i> URL LINK</button>
+                            </div>
+                            
+                            <form id="vtScanForm" class="vt-scan-form">
+                                <input type="hidden" id="vtQueryType" value="ip">
+                                <div class="vt-input-group">
+                                    <input type="text" id="vtQueryValue" placeholder="Enter IP Address (e.g. 185.220.101.5)" required autocomplete="off">
+                                    <button type="submit" class="cyber-btn" id="btnVTScan">
+                                        <span>INITIATE REPUTATION QUERY</span>
+                                        <i class="fa-solid fa-satellite-dish"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Scan In-Progress Animation -->
+                        <div class="vt-loading-container hidden" id="vtLoading">
+                            <div class="vt-scanner-graphic">
+                                <div class="radar"></div>
+                                <div class="radar-scanline"></div>
+                            </div>
+                            <h3>INTELLIGENCE INDEX SEARCH ACTIVE...</h3>
+                            <p>Querying threat databases and geographic registers</p>
+                        </div>
+
+                        <!-- Scan Result Rendering (Hidden initially) -->
+                        <div class="vt-result-container hidden" id="vtResultArea">
+                            <div class="vt-result-layout">
+                                <!-- Reputation Gauge -->
+                                <div class="vt-gauge-column glass-panel">
+                                    <h4>DETECTED THREAT INDEX</h4>
+                                    <div class="vt-circle-gauge-wrapper">
+                                        <div class="vt-circle-gauge" id="vtGaugeCircle">
+                                            <div class="vt-gauge-content">
+                                                <span class="score" id="vtScoreVal">0/75</span>
+                                                <span class="label" id="vtVerdictVal">CLEAN</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="vt-bar-graph">
+                                        <div class="bar-fill red" id="vtBarRed" style="width: 0%;"></div>
+                                        <div class="bar-fill green" id="vtBarGreen" style="width: 100%;"></div>
+                                    </div>
+                                    <p class="vt-scanned-time">Scan Date: <span id="vtScanTime">2026-05-26 12:00</span></p>
+                                </div>
+
+                                <!-- Detailed Stats -->
+                                <div class="vt-details-column glass-panel">
+                                    <div class="vt-details-header">
+                                        <h3 id="vtResultQuery">185.220.101.5</h3>
+                                        <span class="badge" id="vtTypeBadge">IP ADDRESS</span>
+                                    </div>
+                                    <div class="vt-details-grid" id="vtDetailsGrid">
+                                        <!-- Dynamic details depending on search type -->
+                                    </div>
+                                    
+                                    <hr class="panel-divider">
+                                    
+                                    <div class="vt-engines-checklist">
+                                        <h4>Threat Engine Reputations</h4>
+                                        <div class="engines-grid">
+                                            <div class="engine-item"><i class="fa-solid fa-circle-check text-green"></i> CrowdStrike: <span id="eCrowdStrike" class="text-green">Clean</span></div>
+                                            <div class="engine-item"><i class="fa-solid fa-circle-check text-green"></i> Kaspersky: <span id="eKaspersky" class="text-green">Clean</span></div>
+                                            <div class="engine-item"><i class="fa-solid fa-circle-check text-green"></i> Symantec: <span id="eSymantec" class="text-green">Clean</span></div>
+                                            <div class="engine-item"><i class="fa-solid fa-circle-check text-green"></i> Palo Alto: <span id="ePaloAlto" class="text-green">Clean</span></div>
+                                            <div class="engine-item"><i class="fa-solid fa-circle-check text-green"></i> FireEye: <span id="eFireEye" class="text-green">Clean</span></div>
+                                            <div class="engine-item"><i class="fa-solid fa-circle-check text-green"></i> Sophos: <span id="eSophos" class="text-green">Clean</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. HISTORICAL AI REPORTS DATABASE -->
+                <section class="tab-pane" id="tab-reports">
+                    <div class="glass-panel">
+                        <div class="panel-header flex-header">
+                            <div>
+                                <h3><i class="fa-solid fa-box-archive text-cyan"></i> SOC AI SCANS REPOSITORY</h3>
+                                <span class="panel-subtitle">Historical registry of log analytics and generated security score assessments.</span>
+                            </div>
+                            <div class="reports-search">
+                                <input type="text" id="reportArchiveSearch" placeholder="Search files, status...">
+                            </div>
+                        </div>
+
+                        <!-- Reports Table -->
+                        <div class="reports-table-container">
+                            <table class="reports-table">
+                                <thead>
+                                    <tr>
+                                        <th>Scan ID</th>
+                                        <th>Log File Name</th>
+                                        <th>Scan Timestamp</th>
+                                        <th>Total Lines</th>
+                                        <th>Threat Score</th>
+                                        <th>Classification</th>
+                                        <th>Total Alerts</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportsArchiveBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center">No reports loaded. Processing local registry query...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. SOC SETTINGS -->
+                <section class="tab-pane" id="tab-settings">
+                    <div class="glass-panel max-width-800">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-sliders text-cyan"></i> SECURE CONFIGURATION PANEL</h3>
+                            <span class="panel-subtitle">Adjust core thresholds, update API secrets, and configure real-time packet speeds.</span>
+                        </div>
+
+                        <div class="settings-form-wrapper">
+                            <form id="settingsForm">
+                                <div class="form-section">
+                                    <h4><i class="fa-solid fa-brain text-green"></i> GENERATIVE AI ANALYST CREDENTIALS</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="settingsAPIKey">OpenAI API Key (GPT-4o-mini Integration)</label>
+                                        <div class="input-wrapper">
+                                            <input type="password" id="settingsAPIKey" placeholder="sk-................................................">
+                                            <button type="button" class="btn-toggle-visibility" onclick="toggleApiKeyVisibility()"><i class="fa-solid fa-eye" id="keyEyeIcon"></i></button>
+                                        </div>
+                                        <p class="field-desc">Enter your OpenAI API key to execute cognitive threat classification. If left blank, the SOC Dashboard automatically triggers the detailed rule-based local simulation analyzer.</p>
+                                    </div>
+
+                                    <div class="form-group row-flex">
+                                        <label for="settingsAutoAI">Trigger AI scans automatically on log upload</label>
+                                        <div class="switch-control">
+                                            <input type="checkbox" id="settingsAutoAI" checked>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr class="panel-divider">
+
+                                <div class="form-section">
+                                    <h4><i class="fa-solid fa-shield-halved text-gold"></i> THREAT ENGINE RULES</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="settingsThreshold">Global Alert Severity Risk Threshold (<span id="thresholdVal">25</span>%)</label>
+                                        <input type="range" id="settingsThreshold" min="10" max="80" value="25" step="5">
+                                        <p class="field-desc">Define the threat score at which logs are flagged as "Malicious" or "Critical" in notifications.</p>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="settingsPacketSpeed">Live Packet Monitor Simulation Refresh Speed</label>
+                                        <select id="settingsPacketSpeed" class="dark-select">
+                                            <option value="slow">Slow Refresh (Every 4.0s)</option>
+                                            <option value="medium">Medium Refresh (Every 2.0s)</option>
+                                            <option value="fast">Fast Refresh (Every 0.8s)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="settings-actions">
+                                    <button type="submit" class="cyber-btn" id="btnSaveSettings">
+                                        <span>COMMIT CONFIG CHANGES</span>
+                                        <i class="fa-solid fa-check-double"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- FOOTER BAR -->
+            <footer class="app-footer">
+                <p>AETHER SHIELD SOC PORTAL © 2026 // RESTRICTED COMMAND PORTAL // E2E ENCRYPTED CHANNEL</p>
+                <div class="system-stats-footer">
+                    <span>DB STACK: SQLITE3</span>
+                    <span>FLASK CHANNELS: UP</span>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/wireshark.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/virustotal.js') }}"></script>
+</body>
+</html>
